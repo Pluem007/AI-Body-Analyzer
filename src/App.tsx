@@ -122,6 +122,14 @@ export default function App() {
     setResult(null);
 
     try {
+      // Check multiple possible sources for the API Key
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      
+      // Check if API Key is missing or still using placeholder
+      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
+        throw new Error("MISSING_API_KEY");
+      }
+
       const base64Data = base64Image.split(',')[1];
       
       const response = await genAI.models.generateContent({
@@ -164,11 +172,15 @@ export default function App() {
         const parsedResult = JSON.parse(analysisText) as AnalysisResult;
         setResult(parsedResult);
       } else {
-        throw new Error("ไม่ได้รับข้อมูลจากการวิเคราะห์");
+        throw new Error("EMPTY_RESPONSE");
       }
     } catch (err) {
       console.error("Analysis error:", err);
-      setError("เกิดข้อผิดพลาดในการวิเคราะห์ภาพ กรุณาลองใหม่อีกครั้ง");
+      if (err instanceof Error && err.message === "MISSING_API_KEY") {
+        setError("ไม่พบ API Key: กรุณาตั้งค่า GEMINI_API_KEY ใน Environment Variables ของ Vercel");
+      } else {
+        setError("เกิดข้อผิดพลาดในการวิเคราะห์ภาพ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือลองใหม่อีกครั้ง");
+      }
     } finally {
       setIsAnalyzing(false);
     }

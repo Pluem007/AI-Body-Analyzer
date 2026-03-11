@@ -1,0 +1,5 @@
+{
+  "name": "AI Body Scanner & Analyzer",
+  "description": "Analyze body metrics like BMI, age, height, and nationality from a photo using AI.",
+  "requestFramePermissions": ["camera"]
+}

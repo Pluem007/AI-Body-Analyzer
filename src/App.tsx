@@ -9,7 +9,15 @@ import { Camera, RefreshCw, User, Activity, Globe, Ruler, Calendar, AlertCircle,
 import { motion, AnimatePresence } from 'motion/react';
 
 // Initialize Gemini AI
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// We'll initialize it inside the function to ensure we get the latest process.env value
+let genAI: GoogleGenAI | null = null;
+
+const getGenAI = (apiKey: string) => {
+  if (!genAI) {
+    genAI = new GoogleGenAI({ apiKey });
+  }
+  return genAI;
+};
 
 interface AnalysisResult {
   bmi: number;
@@ -122,17 +130,18 @@ export default function App() {
     setResult(null);
 
     try {
-      // Check multiple possible sources for the API Key
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+      // Use process.env.GEMINI_API_KEY directly as it's the most reliable in AI Studio
+      const apiKey = process.env.GEMINI_API_KEY;
       
-      // Check if API Key is missing or still using placeholder
-      if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey === "undefined" || apiKey === "") {
+      // Check if API Key is missing
+      if (!apiKey || apiKey === "" || apiKey === "undefined") {
         throw new Error("MISSING_API_KEY");
       }
 
+      const aiInstance = getGenAI(apiKey);
       const base64Data = base64Image.split(',')[1];
       
-      const response = await genAI.models.generateContent({
+      const response = await aiInstance.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
           {
@@ -177,7 +186,7 @@ export default function App() {
     } catch (err) {
       console.error("Analysis error:", err);
       if (err instanceof Error && err.message === "MISSING_API_KEY") {
-        setError("ไม่พบ API Key: กรุณาตั้งค่า GEMINI_API_KEY ใน Environment Variables ของ Vercel");
+        setError("ไม่พบ API Key: ระบบกำลังเตรียมการเชื่อมต่อ กรุณารอสักครู่แล้วลองกดสแกนใหม่อีกครั้ง (หากใช้บน Vercel อย่าลืมตั้งค่า VITE_GEMINI_API_KEY)");
       } else {
         setError("เกิดข้อผิดพลาดในการวิเคราะห์ภาพ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือลองใหม่อีกครั้ง");
       }

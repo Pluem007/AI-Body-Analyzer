@@ -188,13 +188,13 @@ export default function App() {
       const errorMessage = err instanceof Error ? err.message : String(err);
       
       if (errorMessage === "MISSING_API_KEY") {
-        setError("ไม่พบ API Key: ระบบกำลังเตรียมการเชื่อมต่อ กรุณารอสักครู่แล้วลองกดสแกนใหม่อีกครั้ง (หากใช้บน Vercel อย่าลืมตั้งค่า VITE_GEMINI_API_KEY)");
-      } else if (errorMessage.includes("API key not valid")) {
-        setError("API Key ไม่ถูกต้อง: กรุณาตรวจสอบรหัส API Key ใน Vercel Settings ว่าคัดลอกมาครบถ้วนหรือไม่");
+        setError("ไม่พบ API Key: ระบบกำลังเตรียมการเชื่อมต่อ กรุณารอสักครู่แล้วลองกดสแกนใหม่อีกครั้ง (หากใช้บน Vercel อย่าลืมตั้งค่า VITE_GEMINI_API_KEY และกด Redeploy)");
       } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
-        setError("โควตาเต็ม: คุณใช้งานเกินขีดจำกัดของ API Key แบบฟรี กรุณารอสักครู่แล้วลองใหม่");
+        setError(`โควตาเต็ม (429): คุณใช้งานเกินขีดจำกัดของ API Key นี้แล้ว หากเพิ่งเปลี่ยน Key ใน Vercel อย่าลืมกด 'Redeploy' เพื่อให้ค่าใหม่ทำงานครับ`);
+      } else if (errorMessage.includes("API key not valid")) {
+        setError("API Key ไม่ถูกต้อง: กรุณาตรวจสอบว่าคัดลอกรหัสมาครบถ้วนและไม่มีช่องว่างเกินมา");
       } else {
-        setError(`เกิดข้อผิดพลาดจากระบบ AI: ${errorMessage.substring(0, 100)}... กรุณาลองใหม่อีกครั้ง`);
+        setError(`เกิดข้อผิดพลาด: ${errorMessage.substring(0, 150)}`);
       }
     } finally {
       setIsAnalyzing(false);

@@ -184,11 +184,17 @@ export default function App() {
         throw new Error("EMPTY_RESPONSE");
       }
     } catch (err) {
-      console.error("Analysis error:", err);
-      if (err instanceof Error && err.message === "MISSING_API_KEY") {
+      console.error("Analysis error details:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      if (errorMessage === "MISSING_API_KEY") {
         setError("ไม่พบ API Key: ระบบกำลังเตรียมการเชื่อมต่อ กรุณารอสักครู่แล้วลองกดสแกนใหม่อีกครั้ง (หากใช้บน Vercel อย่าลืมตั้งค่า VITE_GEMINI_API_KEY)");
+      } else if (errorMessage.includes("API key not valid")) {
+        setError("API Key ไม่ถูกต้อง: กรุณาตรวจสอบรหัส API Key ใน Vercel Settings ว่าคัดลอกมาครบถ้วนหรือไม่");
+      } else if (errorMessage.includes("quota") || errorMessage.includes("429")) {
+        setError("โควตาเต็ม: คุณใช้งานเกินขีดจำกัดของ API Key แบบฟรี กรุณารอสักครู่แล้วลองใหม่");
       } else {
-        setError("เกิดข้อผิดพลาดในการวิเคราะห์ภาพ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือลองใหม่อีกครั้ง");
+        setError(`เกิดข้อผิดพลาดจากระบบ AI: ${errorMessage.substring(0, 100)}... กรุณาลองใหม่อีกครั้ง`);
       }
     } finally {
       setIsAnalyzing(false);
